@@ -50,9 +50,13 @@ def create_entry(payload: EntryPayload) -> ActionResult:
 
 @router.post("/{entry_id}/actions", response_model=ActionResult)
 def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
-    """对单条配餐单执行安排配送、确认签收、取消配送；不允许的动作会被拦下并说明原因。"""
-    action = str(payload.values.get("action") or "").strip()
-    entry, message = service.run_action(entry_id, action)
+    """对单条配餐单执行安排配送、确认签收、取消配送；不允许的动作会被拦下并说明原因。
+
+    确认签收需要在 values 里带上接收人员与签收份数，送达时刻缺省时由后端回填。
+    """
+    values = payload.values if isinstance(payload.values, dict) else {}
+    action = str(values.get("action") or "").strip()
+    entry, message = service.run_action(entry_id, action, values)
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)

@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onActivated, onMounted, ref } from 'vue'
 
 import { fetchJson } from '@/api/client'
 
@@ -41,14 +41,21 @@ type Overview = {
 const cards = ref<Overview['cards']>([])
 const moduleRows = ref<Overview['modules']>([])
 
-onMounted(async () => {
+const FALLBACK_CARDS = [{"label": "业务模块", "value": 0}, {"label": "今日新增", "value": 0}]
+const FALLBACK_MODULES = [{"name": "航班计划", "created": 0, "pending": 0, "abnormal": 0}, {"name": "机位资源", "created": 0, "pending": 0, "abnormal": 0}, {"name": "机坪巡查", "created": 0, "pending": 0, "abnormal": 0}, {"name": "廊桥对接", "created": 0, "pending": 0, "abnormal": 0}, {"name": "除冰作业", "created": 0, "pending": 0, "abnormal": 0}, {"name": "航油加注", "created": 0, "pending": 0, "abnormal": 0}, {"name": "行李装卸", "created": 0, "pending": 0, "abnormal": 0}, {"name": "货邮装载", "created": 0, "pending": 0, "abnormal": 0}, {"name": "航空配餐", "created": 0, "pending": 0, "abnormal": 0}, {"name": "摆渡接送", "created": 0, "pending": 0, "abnormal": 0}, {"name": "航空器牵引", "created": 0, "pending": 0, "abnormal": 0}, {"name": "载重平衡", "created": 0, "pending": 0, "abnormal": 0}, {"name": "通行证件", "created": 0, "pending": 0, "abnormal": 0}, {"name": "保障车辆", "created": 0, "pending": 0, "abnormal": 0}, {"name": "安全监察", "created": 0, "pending": 0, "abnormal": 0}, {"name": "保障协议", "created": 0, "pending": 0, "abnormal": 0}, {"name": "保障结算", "created": 0, "pending": 0, "abnormal": 0}, {"name": "资质培训", "created": 0, "pending": 0, "abnormal": 0}]
+
+async function loadOverview() {
   try {
     const payload = await fetchJson<Overview>('/api/overview')
     cards.value = payload.cards
     moduleRows.value = payload.modules
   } catch {
-    cards.value = [{"label": "业务模块", "value": 0}, {"label": "今日新增", "value": 0}]
-    moduleRows.value = [{"name": "航班计划", "created": 0, "pending": 0, "abnormal": 0}, {"name": "机位资源", "created": 0, "pending": 0, "abnormal": 0}, {"name": "机坪巡查", "created": 0, "pending": 0, "abnormal": 0}, {"name": "廊桥对接", "created": 0, "pending": 0, "abnormal": 0}, {"name": "除冰作业", "created": 0, "pending": 0, "abnormal": 0}, {"name": "航油加注", "created": 0, "pending": 0, "abnormal": 0}, {"name": "行李装卸", "created": 0, "pending": 0, "abnormal": 0}, {"name": "货邮装载", "created": 0, "pending": 0, "abnormal": 0}, {"name": "航空配餐", "created": 0, "pending": 0, "abnormal": 0}, {"name": "摆渡接送", "created": 0, "pending": 0, "abnormal": 0}, {"name": "航空器牵引", "created": 0, "pending": 0, "abnormal": 0}, {"name": "载重平衡", "created": 0, "pending": 0, "abnormal": 0}, {"name": "通行证件", "created": 0, "pending": 0, "abnormal": 0}, {"name": "保障车辆", "created": 0, "pending": 0, "abnormal": 0}, {"name": "安全监察", "created": 0, "pending": 0, "abnormal": 0}, {"name": "保障协议", "created": 0, "pending": 0, "abnormal": 0}, {"name": "保障结算", "created": 0, "pending": 0, "abnormal": 0}, {"name": "资质培训", "created": 0, "pending": 0, "abnormal": 0}]
+    cards.value = FALLBACK_CARDS
+    moduleRows.value = FALLBACK_MODULES
   }
-})
+}
+
+onMounted(loadOverview)
+// KeepAlive 缓存下，从业务页返回时重新汇总，保证与列表状态一致
+onActivated(loadOverview)
 </script>
